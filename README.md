@@ -10,9 +10,7 @@ pip install numpy, control, matplotlib
 
 
 
-代码配备了中文博客，详见：
-
-
+代码配备了中文博客，详见：[双足机器人ZMP预观控制算法介绍及代码实现](https://zhuanlan.zhihu.com/p/452704228?)
 
 
 
