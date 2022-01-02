@@ -1,3 +1,7 @@
+# This code is implemented by Chauby (chaubyZou@163.com), feel free to use it.
+# the repository of this code is: https://github.com/chauby/ZMP_preview_control.git
+
+
 #%% Initialize global variations
 import numpy as np
 from control.matlab import dare # for solving the discrete algebraic Riccati equation
@@ -50,9 +54,8 @@ def calculatePreviewControlParams2(A, B, C, Q, R, N):
 
 
 
-
+# %% demo
 if __name__ == '__main__':
-    # ------------------------------- Basic global parameters
     step_pos = np.array([[0, 0.0],
                         [0.2, 0.06],
                         [0.4, -0.06],
@@ -62,17 +65,15 @@ if __name__ == '__main__':
                         [1.7, -0.03],
                         [1.9, 0.09],
                         [2.0, -0.03]])
-
-    z_c = 0.22
+    z_c = 0.5
     g = 9.81
-
     dt = 0.01
     t_step = 0.7 # timing for one step
     t_preview = 1.0 # timing for preview
     n_step = len(step_pos)
     t_simulation = n_step*t_step - t_preview - dt # timing for simulation
 
-    N = int(t_preview/dt) # preview length
+    N_preview = int(t_preview/dt) # preview length
     N_simulation = int(t_simulation/dt)
 
     # Generate ZMP trajectory
@@ -98,10 +99,10 @@ if __name__ == '__main__':
     R = 1e-6
 
     # Calculate Preview control parameters
-    K, f = calculatePreviewControlParams(A, B, C, Q, R, N)
+    K, f = calculatePreviewControlParams(A, B, C, Q, R, N_preview)
 
     # Calculate Improved Preview control parameters
-    Ks, Kx, G = calculatePreviewControlParams2(A, B, C, Q, R, N)
+    Ks, Kx, G = calculatePreviewControlParams2(A, B, C, Q, R, N_preview)
 
 
     # ------------------------------- for Preview Control
@@ -153,8 +154,8 @@ if __name__ == '__main__':
 
     # main loop
     for k in range(N_simulation):
-        ZMP_x_preview = np.asmatrix(ZMP_x_ref[k:k+N]).T
-        ZMP_y_preview = np.asmatrix(ZMP_y_ref[k:k+N]).T
+        ZMP_x_preview = np.asmatrix(ZMP_x_ref[k:k+N_preview]).T
+        ZMP_y_preview = np.asmatrix(ZMP_y_ref[k:k+N_preview]).T
 
         # ------------------------------- 1: Preview Control
         # update ZMP
@@ -181,7 +182,7 @@ if __name__ == '__main__':
         ZMP_x_record_2.append(ZMP_x[0,0])
         ZMP_y_record_2.append(ZMP_y[0,0])
 
-        # calculate erros
+        # calculate errors
         e_x_2[k] = ZMP_x_ref[k] - ZMP_x
         e_y_2[k] = ZMP_y_ref[k] - ZMP_y
 
@@ -202,7 +203,7 @@ if __name__ == '__main__':
         ZMP_x_record_3.append(ZMP_x[0,0])
         ZMP_y_record_3.append(ZMP_y[0,0])
 
-        # calculate erros
+        # calculate errors
         e_x_3[k] = ZMP_x - ZMP_x_ref[k] 
         e_y_3[k] = ZMP_y - ZMP_y_ref[k]
         sum_e_x += e_x_3[k]
@@ -223,68 +224,58 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.figure()
     plt.title("Preview Control")
-    plt.subplot(4,1,1)
-    plt.plot(ux_1, label='ux')
-    plt.plot(uy_1, label='uy')
-    plt.legend()
-    plt.subplot(4,1,2)
+    plt.subplot(3,1,1)
     plt.plot(ZMP_x_ref, 'g--', label='ZMP_x_ref')
-    plt.plot(ZMP_x_record_1, 'b--', label='ZMP_x')
+    plt.plot(ZMP_x_record_1, 'b', label='ZMP_x')
     plt.plot(COM_x_record_1, 'r--', label='COM_x')
     plt.legend()
-    plt.subplot(4,1,3)
+    plt.subplot(3,1,2)
     plt.plot(ZMP_y_ref, 'g--', label='ZMP_y_ref')
-    plt.plot(ZMP_y_record_1, 'b--', label='ZMP_y')
+    plt.plot(ZMP_y_record_1, 'b', label='ZMP_y')
     plt.plot(COM_y_record_1, 'r--', label='COM_y')
     plt.legend()
-    plt.subplot(4,1,4)
+    plt.subplot(3,1,3)
     plt.plot(ZMP_x_ref, ZMP_y_ref, 'g--', label='ZMP_ref')
-    plt.plot(ZMP_x_record_1, ZMP_y_record_1, 'b--', label='ZMP')
+    plt.plot(ZMP_x_record_1, ZMP_y_record_1, 'b', label='ZMP')
     plt.plot(COM_x_record_1, COM_y_record_1, 'r--', label='COM')
     plt.legend()
 
     plt.figure()
     plt.title("Preview Control 2")
-    plt.subplot(4,1,1)
-    plt.plot(ux_2, label='ux')
-    plt.plot(uy_2, label='uy')
-    plt.legend()
-    plt.subplot(4,1,2)
+    plt.subplot(3,1,1)
     plt.plot(ZMP_x_ref, 'g--', label='ZMP_x_ref')
-    plt.plot(ZMP_x_record_2, 'b--', label='ZMP_x')
+    plt.plot(ZMP_x_record_2, 'b', label='ZMP_x')
     plt.plot(COM_x_record_2, 'r--', label='COM_x')
     plt.legend()
-    plt.subplot(4,1,3)
+    plt.subplot(3,1,2)
     plt.plot(ZMP_y_ref, 'g--', label='ZMP_y_ref')
-    plt.plot(ZMP_y_record_2, 'b--', label='ZMP_y')
+    plt.plot(ZMP_y_record_2, 'b', label='ZMP_y')
     plt.plot(COM_y_record_2, 'r--', label='COM_y')
     plt.legend()
-    plt.subplot(4,1,4)
+    plt.subplot(3,1,3)
     plt.plot(ZMP_x_ref, ZMP_y_ref, 'g--', label='ZMP_ref')
-    plt.plot(ZMP_x_record_2, ZMP_y_record_2, 'b--', label='ZMP')
+    plt.plot(ZMP_x_record_2, ZMP_y_record_2, 'b', label='ZMP')
     plt.plot(COM_x_record_2, COM_y_record_2, 'r--', label='COM')
     plt.legend()
 
     plt.figure()
-    plt.title("Preview Control 2")
-    plt.subplot(4,1,1)
-    plt.plot(ux_3, label='ux')
-    plt.plot(uy_3, label='uy')
-    plt.legend()
-    plt.subplot(4,1,2)
+    plt.title("Preview Control 3")
+    plt.subplot(3,1,1)
     plt.plot(ZMP_x_ref, 'g--', label='ZMP_x_ref')
-    plt.plot(ZMP_x_record_3, 'b--', label='ZMP_x')
+    plt.plot(ZMP_x_record_3, 'b', label='ZMP_x')
     plt.plot(COM_x_record_3, 'r--', label='COM_x')
     plt.legend()
-    plt.subplot(4,1,3)
+    plt.subplot(3,1,2)
     plt.plot(ZMP_y_ref, 'g--', label='ZMP_y_ref')
-    plt.plot(ZMP_y_record_3, 'b--', label='ZMP_y')
+    plt.plot(ZMP_y_record_3, 'b', label='ZMP_y')
     plt.plot(COM_y_record_3, 'r--', label='COM_y')
     plt.legend()
-    plt.subplot(4,1,4)
+    plt.subplot(3,1,3)
     plt.plot(ZMP_x_ref, ZMP_y_ref, 'g--', label='ZMP_ref')
-    plt.plot(ZMP_x_record_3, ZMP_y_record_3, 'b--', label='ZMP')
+    plt.plot(ZMP_x_record_3, ZMP_y_record_3, 'b', label='ZMP')
     plt.plot(COM_x_record_3, COM_y_record_3, 'r--', label='COM')
     plt.legend()
 
     plt.show()
+
+# %%
